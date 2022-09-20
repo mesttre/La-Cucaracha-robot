@@ -22,7 +22,12 @@ const int vassouraPin = 15;
 bool sentido = true;         // variavel para ler o estado do botao
 
 int RGS0 = 0x00;
+int AA4 = 0x00;
 int AV5 = 0x00;
+int RE6 = 0x00;
+int REFT7 = 0x00;
+int RD8 = 0x00;
+int RDFT9 = 0x00;
 
 //Inicializa Pinos
 void setup(){
@@ -137,43 +142,6 @@ void loop() {
         serialCommand = Serial.readStringUntil('\n');
         processCommand(serialCommand);
     }
-//	  if (Serial.available() > 0) {
-//	    // l� do buffer o dado recebido:
-//	    char incomingByte = Serial.read();
-//
-//	    // responde com o dado recebido:
-//	    Serial.print("I received: ");
-//	    Serial.println(incomingByte, DEC);
-//	    switch(incomingByte){
-//	    case 'a':
-//	    	vaiPraEsquerda();
-//	    	break;
-//	    case 's':
-//	    	vaiPraTras ();
-//	    	break;
-//	    case 'd':
-//	    	vaiPraDireita();
-//	    	break;
-//	    case 'w':
-//	    	vaiPraFrente ();
-//	    	break;
-//	    case 'q':
-//	    	para();
-//	    	break;
-//      case 'e':
-//        iniciaAspirador();
-//        break;
-//      case 'r':
-//        paraAspirador();
-//        break;
-//      case 'f':
-//        iniciaVassoura();
-//        break;
-//      case 'g':
-//        paraVassoura();
-//        break;
-//     }
-//	  }
 	  if (digitalRead(sensorPin) == HIGH) {
 		  Serial.println("sensor");
 	  }
@@ -189,24 +157,34 @@ void processCommand(String command) {
      Serial.println("DBG Received command: " + command+"<<<");
      if (command == "GET_STATUS"){
           char buffer[50];
-          sprintf(buffer, "[%d,%d,%d,%d,%d,%d,%d,%d,%d,%d]", RGS0,1,2,3,4,AV5,6,7,8,9);
+          sprintf(buffer, "[%d,%d,%d,%d,%d,%d,%d,%d,%d,%d]", RGS0,1,2,3,AA4,AV5,RE6,REFT7,RD8,RDFT9);
           Serial.println(buffer);
+     }
+     else if (command.startsWith("SET_ASP")){
+          String tmp = command.substring(7);
+          tmp.trim();
+          if(tmp=="L"){
+            iniciaAspirador();
+            AA4 = 1;
+          }
+          if(tmp=="D"){
+            paraAspirador();
+            AA4 = 0;
+          }
      }
      else if (command.startsWith("SET_VAS")){
           String tmp = command.substring(7);
           tmp.trim();
-          if(tmp=="L") iniciaVassoura();
-          if(tmp=="D") paraVassoura();
-          Serial.println(">>"+tmp+"<<");
+          if(tmp=="L"){
+            iniciaVassoura();
+            AV5 = 1;
+          }
+          if(tmp=="D"){
+            paraVassoura();
+            AV5 = 0;
+          }
      }
-
-          else if (command.startsWith("SET_VAS")){
-          String tmp = command.substring(7);
-          tmp.trim();
-          if(tmp=="L") iniciaVassoura();
-          if(tmp=="D") paraVassoura();
-          Serial.println(">>"+tmp+"<<");
-     }
+    
      else if (command.startsWith("SET_RODA")){
           String tmpPower = command.substring(9,10);
           tmpPower.trim();
@@ -215,25 +193,50 @@ void processCommand(String command) {
           String tmpVel = command.substring(12);
           tmpVel.trim();
           int tmpVelInt = tmpVel.toInt();
-          Serial.println(">>"+tmpPower+"<<");
-          Serial.println(">>"+tmpDir+"<<");
-          Serial.println(">>"+String(tmpVelInt)+"<<");
           if(tmpPower=="E" && tmpDir=="T"){//min 170 max 256
             ledcWrite(motorChannelAP, 0);
             ledcWrite(motorChannelAN, tmpVelInt);
+            RE6 = tmpVelInt;
+            REFT7 = 1; 
           }
           else if(tmpPower=="E" && tmpDir=="F"){//min 170 max 256
             ledcWrite(motorChannelAP, tmpVelInt);
             ledcWrite(motorChannelAN, 0);
+            RE6 = tmpVelInt;
+            REFT7 = 0; 
           }
-          if(tmpPower=="D" && tmpDir=="T"){//min 170 max 256
+          else if(tmpPower=="D" && tmpDir=="T"){//min 170 max 256
              Serial.println("LF");
             ledcWrite(motorChannelBP, 0);
             ledcWrite(motorChannelBN, tmpVelInt);
+            RD8 = tmpVelInt;
+            RDFT9 = 1; 
           }
           else if(tmpPower=="D" && tmpDir=="F"){//min 170 max 256
             ledcWrite(motorChannelBP, tmpVelInt);
             ledcWrite(motorChannelBN, 0);
+            RD8 = tmpVelInt;
+            RDFT9 = 0; 
+          }
+          else if(tmpPower=="T" && tmpDir=="T"){//min 170 max 256
+            ledcWrite(motorChannelAP, 0);
+            ledcWrite(motorChannelAN, tmpVelInt);
+            ledcWrite(motorChannelBP, 0);
+            ledcWrite(motorChannelBN, tmpVelInt);
+            RE6 = tmpVelInt;
+            REFT7 = 1; 
+            RD8 = tmpVelInt;
+            RDFT9 = 1; 
+          }
+          else if(tmpPower=="T" && tmpDir=="F"){//min 170 max 256
+            ledcWrite(motorChannelAP, tmpVelInt);
+            ledcWrite(motorChannelAN, 0);
+            ledcWrite(motorChannelBP, tmpVelInt);
+            ledcWrite(motorChannelBN, 0);
+            RE6 = tmpVelInt;
+            REFT7 = 0; 
+            RD8 = tmpVelInt;
+            RDFT9 = 0; 
           }
           
      }
