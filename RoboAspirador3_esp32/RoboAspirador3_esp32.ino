@@ -22,6 +22,7 @@ const int vassouraPin = 15;
 bool sentido = true;         // variavel para ler o estado do botao
 
 int RGS0 = 0x00;
+int SB3 = 0x00;
 int AA4 = 0x00;
 int AV5 = 0x00;
 int RE6 = 0x00;
@@ -130,7 +131,11 @@ void vaiPraEsquerda(){
 
 }
 
-
+void getStatus(){
+  char buffer[50];
+  sprintf(buffer, "[%d,%d,%d,%d,%d,%d,%d,%d,%d,%d]", RGS0,0,0,SB3,AA4,AV5,RE6,REFT7,RD8,RDFT9);
+  Serial.println(buffer);
+}
 
 
 void loop() {
@@ -143,10 +148,15 @@ void loop() {
         processCommand(serialCommand);
     }
 	  if (digitalRead(sensorPin) == HIGH) {
-		  Serial.println("sensor");
+		  Serial.println("Parede");
+      SB3 = 1;
+      getStatus();
+      delay(200);
+	  }else{
+      SB3 = 0;
 	  }
   if (digitalRead(buttonPin) == LOW) {
-	  Serial.println("parede");
+	  Serial.println("Botao");
 	  delay(200);
   }
 }
@@ -156,9 +166,7 @@ void processCommand(String command) {
     command.toUpperCase();
      Serial.println("DBG Received command: " + command+"<<<");
      if (command == "GET_STATUS"){
-          char buffer[50];
-          sprintf(buffer, "[%d,%d,%d,%d,%d,%d,%d,%d,%d,%d]", RGS0,1,2,3,AA4,AV5,RE6,REFT7,RD8,RDFT9);
-          Serial.println(buffer);
+        getStatus();
      }
      else if (command.startsWith("SET_ASP")){
           String tmp = command.substring(7);
