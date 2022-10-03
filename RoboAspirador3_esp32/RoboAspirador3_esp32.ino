@@ -132,8 +132,8 @@ void vaiPraEsquerda(){
 }
 
 void getStatus(){
-  char buffer[50];
-  sprintf(buffer, "[%d,%d,%d,%d,%d,%d,%d,%d,%d,%d]", RGS0,0,0,SB3,AA4,AV5,RE6,REFT7,RD8,RDFT9);
+  char buffer[100];
+  sprintf(buffer, "RES GET_STATUS [ %d , %d , %d , %d , %d , %d , %d , %d , %d , %d ]\n", RGS0,0,0,SB3,AA4,AV5,RE6,REFT7,RD8,RDFT9);
   Serial.println(buffer);
 }
 
@@ -146,6 +146,7 @@ void loop() {
     if (Serial.available() > 0) {
         serialCommand = Serial.readStringUntil('\n');
         processCommand(serialCommand);
+        getStatus();
     }
 	  if (digitalRead(sensorPin) == HIGH) {
 		  Serial.println("Parede");
@@ -159,12 +160,13 @@ void loop() {
 	  Serial.println("Botao");
 	  delay(200);
   }
+  
 }
 
 void processCommand(String command) {
     command.trim();
     command.toUpperCase();
-     Serial.println("DBG Received command: " + command+"<<<");
+//     Serial.println("RES "+ command + " DBG Received command: " + command+"<<<");
      if (command == "GET_STATUS"){
         getStatus();
      }

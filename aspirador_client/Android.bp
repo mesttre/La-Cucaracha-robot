@@ -1,0 +1,9 @@
+cc_binary {
+    name:         "aspirador_client",
+    srcs:         [ "aspirador_client.cpp" ],
+
+    shared_libs:  [ "aspirador_lib" ],
+    required:     [ "aspirador_lib" ],
+
+    vendor: true,
+}
